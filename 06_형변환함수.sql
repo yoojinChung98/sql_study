@@ -47,7 +47,8 @@ SELECT TO_CHAR(TO_DATE('23년4월13일','YY"년"MM"월"DD"일"')+10,'YYYY-MM-DD') FROM
 
 SELECT
     TO_DATE('2023-04-13'),
-    sysdate - TO_DATE('2023-04-13)
+    sysdate - TO_DATE('2023-04-13'),
+    TO_DATE('23년4월13일','YY"년"MM"월"DD"일"')
 FROM dual;
 
 
@@ -59,7 +60,7 @@ SELECT NVL(NULL, 0) FROM dual;
 
 SELECT
     first_name,
-    NVL(commission_pct, 10.1) AS comm_pct
+    NVL(commission_pct, 0) AS comm_pct
 FROM employees;
 
 --NULL 변환 함수 NVL2(컬럼, null이 아닐 경우의 값, null일 경우의 값)
