@@ -56,15 +56,17 @@ FROM employees;
 --LPAD(기존 문자열, 총 문자열 갯수, 채울 문자열) 왼쪽부터 채움
 --주로 이름/ 주민등록번호를 가릴 때 사용함.
 SELECT
-    LPAD('abc', 10, '*'),
-    RPAD('abd', 10, '*')
+    LPAD('abc',2, '*'),
+    LPAD('abc',10, '*/'),
+    RPAD('abd', 10, '*'),
+    RPAD('abc',2, '*')
 FROM dual;
 
 -- LTRIM(), RTRIM(): 지정한 값을 찾아서 없애주는 함수
 -- TRIM() 양 끝의 공백들을 제거해주는 함수
 
---LTIRM(param1, param2) -> param2의 값을 param1에서 찾아서 한 번 제거 (왼쪽부터)
---LTIRM(param1, param2) -> param2의 값을 param1에서 찾아서 한 번 제거 (오른쪽부터)
+--LTIRM(param1, param2) -> param2의 값을 param1에서 찾아서 제거 (왼쪽부터)
+--LTIRM(param1, param2) -> param2의 값을 param1에서 찾아서  제거 (오른쪽부터)
 SELECT LTRIM('javascript_java', 'java') FROM dual;
 SELECT RTRIM('javascript_java', 'java') FROM dual;
 SELECT RTRIM('javascript_java', '_') FROM dual; --이건 안된다?
@@ -76,7 +78,7 @@ SELECT
 FROM dual;
 --참고로 공백 제거에도 사용할 수 있음.
 SELECT
-    REPLACE(' j  av  a  ', ' ', '')
+    REPLACE(' ja v  a  ', ' ', '')
 FROM dual;
 
 SELECT
@@ -94,7 +96,8 @@ SELECT
     CONCAT(CONCAT(first_name,' '),last_name) AS 이름,
     REPLACE(hire_date,'/','') AS 입사일자
 FROM employees
-ORDER BY first_name;
+ORDER BY 이름;
+-- 정렬 시 붙였던 별칭으로 지목하기!
 
 /*
 문제 2.
@@ -103,8 +106,8 @@ EMPLOYEES 테이블에서 phone_number컬럼은 ###.###.####형태로 저장되어 있다
 전화 번호를 출력하도록 쿼리를 작성하세요. (CONCAT, SUBSTR, LENGTH 사용)
 */
 SELECT
-    CONCAT('(02)',SUBSTR(phone_number,4  ,LENGTH(phone_number)   )) AS 전화번호,
-    REPLACE(CONCAT('(02)',SUBSTR(phone_number,4)),'.','-') AS 전화번호2
+    CONCAT('(02)',SUBSTR(phone_number,5)) AS 전화번호,
+    REPLACE(CONCAT('(02)',SUBSTR(phone_number,5)),'.','-') AS 전화번호2
 FROM employees;
 
 
@@ -119,7 +122,6 @@ EMPLOYEES 테이블에서 JOB_ID가 it_prog인 사원의 이름(first_name)과 급여(salary)를
 */
 SELECT
     RPAD(SUBSTR(first_name,1,3),LENGTH(first_name),'*') AS name,
-    REPLACE(first_name, SUBSTR(4,LENGTH(first_name),)
     LPAD(salary, 10, '*')
 FROM employees
 WHERE LOWER(job_id) = 'it_prog';
