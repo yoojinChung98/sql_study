@@ -102,7 +102,7 @@ SELECT
         'B', 'B입니다.',
         'C', 'C입니다.',
         '뭔지 모르겠읍니다;;'
-    )
+    ) AS 결과
 FROM dual;
 
 SELECT
