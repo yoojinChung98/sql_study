@@ -170,5 +170,142 @@ ORDER BY country_name ASC;
 -- 약간 지역변수와 같은 느낌인가봐. 서브쿼리 안에서 지칭한 것은 외부에서 사용할 수 없어욥.
 
 
+/*
+문제 12. 
+employees테이블, departments테이블을 left조인 hire_date를 오름차순 기준으로 
+1-10번째 데이터만 출력합니다.
+조건) rownum을 적용하여 번호, 직원아이디, 이름, 전화번호, 입사일, 
+부서아이디, 부서이름 을 출력합니다.
+조건) hire_date를 기준으로 오름차순 정렬 되어야 합니다. rownum이 틀어지면 안됩니다.
+*/
+--미리 다듬어놓은 employee 테이블과 조인하면 어떨까 하는 궁금증에 생성한 쿼리문!ㅋㅋㅋ 돌아간다@!!!
+SELECT
+    e.*, d.department_name
+FROM(
+    SELECT
+        ROWNUM AS rn,
+        et.*
+    FROM(
+        SELECT
+            employee_id, first_name, phone_number, hire_date, department_id
+        FROM employees
+        ORDER BY hire_date
+    ) et
+) e
+LEFT JOIN departments d
+ON e.department_id = d.department_id
+WHERE rn BETWEEN 1 AND 10
+ORDER BY rn ASC;
 
+--배운대로 미리 조인해놓기!
+
+SELECT tbl.*
+FROM(
+    SELECT ROWNUM AS rn, t.*
+    FROM(
+        SELECT employee_id, first_name, phone_number, hire_date, d.DEPARTMENT_ID, department_name
+        FROM employees e
+        LEFT JOIN departments d
+        ON e.department_id = d.department_id
+        ORDER BY hire_date
+    ) t
+) tbl
+WHERE rn BETWEEN 1 AND 10;
+
+
+/*
+문제 13. 
+--EMPLOYEES 와 DEPARTMENTS 테이블에서 JOB_ID가 SA_MAN 사원의 정보의 LAST_NAME, JOB_ID, 
+DEPARTMENT_ID,DEPARTMENT_NAME을 출력하세요.
+*/
+SELECT
+    e.last_name, e.job_id, d.department_id, department_name
+FROM employees e
+LEFT JOIN departments d
+ON e.department_id = d.department_id
+WHERE job_id = 'SA_MAN';
+
+
+/*
+문제 14
+--DEPARTMENT테이블에서 각 부서의 ID, NAME, MANAGER_ID와 부서에 속한 인원수를 출력하세요.
+--인원수 기준 내림차순 정렬하세요.
+--사람이 없는 부서는 출력하지 뽑지 않습니다.
+*/
+SELECT
+    d.department_id, d.department_name, d.manager_id, tbl.count
+FROM(
+    SELECT
+        department_id,
+        COUNT(*) AS count
+    FROM employees
+    WHERE department_id IS NOT NULL
+    GROUP BY department_id
+) tbl
+JOIN departments d
+ON tbl.department_id = d.department_id
+ORDER BY tbl.count DESC;
+
+
+/*
+문제 15
+--부서에 대한 정보 전부(d.*)와, 주소(loc), 우편번호(loc), 부서별 평균 연봉(e)을 구해서 출력하세요.
+--부서별 평균이 없으면 0으로 출력하세요.NVL(AVG(e.salary), 0)
+*/
+
+SELECT
+    t.*,
+    NVL((SELECT TRUNC(AVG(salary)) FROM employees e
+        WHERE e.department_id = t.department_id),
+    0) AS sal_avg
+FROM(
+    SELECT
+        d.*, loc.street_address, loc.postal_code
+    FROM departments d
+    LEFT JOIN locations loc
+    ON loc.location_id = d.location_id
+) t;
+
+
+SELECT
+    d.*,
+    loc.street_address,
+    loc.postal_code,
+    NVL(result.부서별평균연봉, 0) AS avg_salary
+FROM departments d
+LEFT JOIN locations loc
+ON d.location_id = loc.location_id
+LEFT JOIN (
+            SELECT
+                department_id,
+                TRUNC(AVG(salary)) AS 부서별평균연봉
+            FROM employees e
+            GROUP BY department_id
+            ) result
+ON d.department_id = result.department_id;
+
+
+/*
+문제 16
+-문제 15 결과에 대해 DEPARTMENT_ID기준으로 내림차순 정렬해서 
+ROWNUM을 붙여 1-10 데이터 까지만 출력하세요.
+*/
+
+SELECT ROWNUM AS rn, tbl.*
+    FROM(
+        SELECT
+            t.*,
+            NVL((SELECT AVG(salary) FROM employees e
+                WHERE e.department_id = t.department_id),
+            0) AS sal_avg
+        FROM(
+            SELECT
+                d.*, loc.street_address, loc.postal_code
+            FROM departments d
+            LEFT JOIN locations loc
+            ON loc.location_id = d.location_id
+        ) t
+        ORDER BY department_id
+    ) tbl
+WHERE ROWNUM <= 10;
 

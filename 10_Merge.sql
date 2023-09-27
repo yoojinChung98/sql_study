@@ -132,6 +132,18 @@ WHEN NOT MATCHED THEN -- 조건이 일치하지 않는 경우 (한쪽에만 데이터가 있는 경우)
 CREATE TABLE DEPTS AS
 (SELECT department_id, department_name, manager_id, location_id
 FROM departments);
+
+INSERT INTO depts (department_id, department_name, location_id)
+VALUES (280, '개발', 1800);
+INSERT INTO depts (department_id, department_name, location_id)
+VALUES (290, '회계부', 1800);
+INSERT INTO depts
+VALUES (300, '재정', 301, 1800);
+INSERT INTO depts
+VALUES (310, '인사', 302, 1800);
+INSERT INTO depts
+VALUES (320, '영업', 303, 1700);
+
 --2,.
 UPDATE depts SET department_name = 'IT bank'
 WHERE department_name = 'IT Support';
@@ -143,10 +155,15 @@ UPDATE depts SET department_name = 'IT Help', manager_id = 303, location_id=1800
 WHERE department_name = 'IT Helpdesk';
 
 UPDATE depts SET manager_id = 301
-WHERE department_name IN('Accounting','Finance','Human Resources','Sales');
+WHERE department_name IN('회계부','재정','인사','영업');
 --3.
 DELETE FROM depts
 WHERE department_name IN ('Sales', 'NOC');
+
+DELETE FROM depts
+WHERE department_id = (SELECT department_id FROM depts 
+                        WHERE department_name = 'NOC');
+
 --4.
 DELETE FROM depts
 WHERE department_id > 200;
@@ -185,7 +202,23 @@ WHEN NOT MATCHED THEN
 
 SELECT * FROM jobs_it;
 
+-----------------------------------
+--차가 0 이상인 경우만 업데이트!! 를 체크해보자!
+MERGE INTO jobs_it a
+    USING (SELECT * FROM jobs WHERE min_salary > 0) b
+    ON (a.job_id = b.job_id)
+WHEN MATCHED THEN
+    UPDATE SET (min_salary, max_salary)
+        (
+            SELECT min_salary, max_salary
+            FROM jobs_it a1 JOIN jobs a2
+            ON a1.job_id = a2.job_id;
+            WHERE a2.min_salary - a1.min_salary > 0 )
+        )
+WHEN NOT MATCHED THEN
+    INSERT VALUES(b.job_id, b.job_title, b.min_salary, b.max_salary);
 
+SELECT * FROM jobs_it;
 
 
 
