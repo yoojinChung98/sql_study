@@ -80,6 +80,7 @@ employee_id를 입력받아 employees에 존재하면,
 근속년수를 out하는 프로시저를 작성하세요. (익명블록에서 프로시저를 실행)
 없다면 exception처리하세요
 */
+--내가 쓴거 (EXCEPTION 발생하지 않게 그냥 SELECT 두번 떄림)
 CREATE OR REPlACE PROCEDURE calc_working_days
     (p_emp_id IN employees.employee_id%TYPE,
      p_w_year OUT NUMBER)
@@ -103,16 +104,47 @@ BEGIN
     WHERE employee_id = p_emp_id;
     
     p_w_year := TRUNC((sysdate - v_h_date)/365);
+END;
 
+--선생님이 쓴 코드
+CREATE OR REPLACE PROCEDURE emp_hire_proc
+    (p_employee_id IN employees.employee_id%TYPE,
+     p_year OUT NUMBER)
+IS
+    v_hire_date employees.hire_date%TYPE;
+BEGIN
+    SELECT
+        hire_date
+    INTO
+        v_hire_date
+    FROM employees
+    WHERE employee_id = p_employee_id;
+    
+    p_year := TRUNC((sysdate - v_hire_date) / 365);
+    
+    -- 만약 존재하지 않는 사원번호라면, 조회되는 사원번호가 하나도 없을 텐데,
+    -- 없는 것을 INTO로 넣겠다 하니 NO DATA FOUND 에러 발생!! (NULL 을 넣는다 같은 헛소리 하지말고)
+    EXCEPTION WHEN OTHERS THEN
+        dbms_output.put_line(p_employee_id || '은(는) 없는 데이터 입니다.');
 END;
 
 DECLARE
     v_w_years NUMBER;
 BEGIN
-    calc_working_days(50, v_w_years);
-    --dbms_output.put_line(v_w_years||'년 연속 근무');
+    calc_working_days(106, v_w_years);
+    IF v_w_years IS NOT NULL THEN
+        dbms_output.put_line(v_w_years||'년 연속 근무');
+    END IF;
 END;
 
+DECLARE
+    v_w_years NUMBER;
+BEGIN
+    emp_hire_proc(50, v_w_years);
+    IF v_w_years IS NOT NULL THEN
+        dbms_output.put_line(v_w_years||'년 연속 근무');
+    END IF;
+END;
 
 /*
 프로시저명 - new_emp_proc
@@ -126,20 +158,15 @@ employee_id, last_name, email, hire_date, job_id를 입력받아
 프로시저가 전달받아야 할 값: 사번, last_name, email, hire_date, job_id
 */
 
-DROP TABLE emps;
+CREATE TABLE emps AS ( SELECT * FROM employees );
 
-CREATE TABLE emps AS (
-    SELECT * FROM employees
-);
-
-DROP PROCEDURE new_emp_proc;
 
 CREATE OR REPLACE PROCEDURE  new_emp_proc
-    (p_emp_id IN employees.employee_id%TYPE,
-     p_emp_lName IN employees.last_name%TYPE,
-     p_emp_email IN employees.email%TYPE,
-     p_emp_hDate IN employees.hire_date%TYPE,
-     p_emp_jId IN employees.job_id%TYPE
+    (p_emp_id IN emps.employee_id%TYPE,
+     p_emp_lName IN emps.last_name%TYPE,
+     p_emp_email IN ems.email%TYPE,
+     p_emp_hDate IN ems.hire_date%TYPE,
+     p_emp_jId IN emps.job_id%TYPE
     )
 IS
 BEGIN
@@ -152,17 +179,12 @@ BEGIN
             a.email = p_emp_email,
             a.hire_date = p_emp_hDate,
             a.job_id = p_emp_jId
-    
     WHEN NOT MATCHED THEN
         INSERT (a.employee_id, a.last_name, a.email, a.hire_date, a.job_id)
         VALUES(p_emp_id, p_emp_lName, p_emp_email, p_emp_hDate, p_emp_jId);
-    
 END;
 
-EXEC new_emp_proc(206, 'testName', 'email', sysdate, 'AAAAA');
 
+EXEC new_emp_proc(300, 'testName', 'email', sysdate, 'AAAAA');
 SELECT * FROM emps;
-
-
-SELECT 206 FROM dual;
 
